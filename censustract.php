@@ -45,6 +45,22 @@ function censustract_civicrm_install() {
     'is_active' => 1,
     'is_searchable' => 1,
   ));
+  $official = civicrm_api3('CustomGroup', 'create', array(
+    'title' => ts('Elected Official'),
+    'name' => 'elected_official',
+    'extends' => array(
+      '0' => 'Contact',
+    ),
+    'is_active' => 1,
+  ));
+  civicrm_api3('CustomField', 'create', array(
+    'label' => ts('Official for Neighbourhood'),
+    'custom_group_id' => 'official_for_neighbourhood',
+    'data_type' => "String",
+    'html_type' => "Select",
+    'is_active' => 1,
+    'is_searchable' => 1,
+  ));
   _censustract_civix_civicrm_install();
 }
 
@@ -124,6 +140,30 @@ function censustract_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _censustract_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
+/**
+ * Implementation of hook_civicrm_fieldOptions
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_fieldOptions
+ */
+function censustract_civicrm_fieldOptions($entity, $field, &$options, $params) {
+  $neighbourhood = civicrm_api3('CustomField', 'getvalue', array(
+    'name' => 'official_for_neighbourhood',
+    'return' => 'id',
+  ));
+  if ($entity == "Contact" && $field == "custom_" . $neighbourhood) {
+    list($table, $column) = CRM_Censustract_BAO_Censustract::getTractData();
+    $dao = CRM_Core_DAO::executeQuery("SELECT {$column} as tract FROM {$table} GROUP BY {$column}");
+    while ($dao->fetch()) {
+      $options[$dao->tract] = $dao->tract;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_civicrm_post
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_post
+ */
 function censustract_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   if ($objectName == "Address") {
     $addressFields = array(
@@ -134,6 +174,9 @@ function censustract_civicrm_post($op, $objectName, $objectId, &$objectRef) {
     );
     $address = "";
     foreach ($addressFields as $key => $field) {
+      if (empty($objectRef->$key)) {
+        continue;
+      }
       if ($key == "state_province_id") {
         $addressField = CRM_Core_PseudoConstant::stateProvince($objectRef->$key, FALSE);
       }
@@ -142,12 +185,36 @@ function censustract_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       }
       $address .= $field . "=" . CRM_Censustract_BAO_Censustract::parseText($addressField) . "&";
     }
-    $address .= "benchmark=Public_AR_Current&vintage=Current_Current&format=json";
-    $url = GEOCODING_URL . $address;
+    if (!empty($address)) {
+      $address .= "benchmark=Public_AR_Current&vintage=Current_Current&format=json";
+      $url = GEOCODING_URL . $address;
+    }
     $response = CRM_Censustract_BAO_Censustract::getCensusTract($url);
 
     if ($response) {
       // Save to custom field for address.
+      try {
+        $census = civicrm_api3('CustomField', 'getvalue', array(
+          'name' => 'Census_Tract',
+          'return' => 'id',
+        ));
+        civicrm_api3('CustomValue', 'create', array(
+          'entity_id' => $objectId,
+          'custom_' . $census => $response,
+        ));
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        $errorMessage = $e->getMessage();
+        $errorCode = $e->getErrorCode();
+        $errorData = $e->getExtraParams();
+        $errors[] = array(
+          'error_message' => $errorMessage,
+          'error_code' => $errorCode,
+          'error_data' => $errorData,
+        );
+        CRM_Core_Error::debug_var("Census not saved", $errors);
+        CRM_Core_Session::setStatus(ts("Census data not saved/found."), ts("Warning"), "alert");
+      }
     }
   }
 }
