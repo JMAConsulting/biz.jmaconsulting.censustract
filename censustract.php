@@ -218,3 +218,17 @@ function censustract_civicrm_post($op, $objectName, $objectId, &$objectRef) {
     }
   }
 }
+
+function censustract_civicrm_alterMailParams(&$params, $context) { 
+  if (CRM_Utils_Array::value('groupName', $params) == 'Report Email Sender') {
+    $email = CRM_Utils_Request::retrieve('email_to_send', 'String', CRM_Core_DAO::$_nullObject);
+    if ($email) {
+      if (!empty($params['toEmail'])) {
+        $params['toEmail'] .= ',' . $email;
+      }
+      else {
+        $params['toEmail'] = $email;
+      }
+    }
+  }  
+}
