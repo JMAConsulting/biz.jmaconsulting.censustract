@@ -55,7 +55,7 @@ function censustract_civicrm_install() {
   ));
   civicrm_api3('CustomField', 'create', array(
     'label' => ts('Official for Neighbourhood'),
-    'custom_group_id' => 'official_for_neighbourhood',
+    'custom_group_id' => 'elected_official',
     'data_type' => "String",
     'html_type' => "Select",
     'is_active' => 1,
@@ -147,7 +147,7 @@ function censustract_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  */
 function censustract_civicrm_fieldOptions($entity, $field, &$options, $params) {
   $neighbourhood = civicrm_api3('CustomField', 'getvalue', array(
-    'name' => 'official_for_neighbourhood',
+    'name' => 'Official_for_Neighbourhood',
     'return' => 'id',
   ));
   if ($entity == "Contact" && $field == "custom_" . $neighbourhood) {

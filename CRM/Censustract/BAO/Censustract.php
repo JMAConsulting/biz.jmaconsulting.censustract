@@ -76,7 +76,7 @@ class CRM_Censustract_BAO_Censustract extends CRM_Core_DAO {
 
     $officialCount = CRM_Core_DAO::singleValueQuery("SELECT count(*) FROM {$table} WHERE {$column} <> '' AND {$column} IS NOT NULL");
     $neighbourhood = civicrm_api3('CustomField', 'getvalue', array(
-      'name' => 'official_for_neighbourhood',
+      'name' => 'Official_for_Neighbourhood',
       'return' => 'id',
     ));
 
@@ -97,7 +97,7 @@ class CRM_Censustract_BAO_Censustract extends CRM_Core_DAO {
   public static function sendReport($params) {
     $officials = self::getOfficialData();
     $neighbourhood = civicrm_api3('CustomField', 'getvalue', array(
-      'name' => 'official_for_neighbourhood',
+      'name' => 'Official_for_Neighbourhood',
       'return' => 'id',
     ));
     $ind = array();

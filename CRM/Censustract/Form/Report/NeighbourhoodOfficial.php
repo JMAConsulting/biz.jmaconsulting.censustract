@@ -139,7 +139,7 @@ class CRM_Censustract_Form_Report_NeighbourhoodOfficial extends CRM_Report_Form 
       'return' => 'table_name',
     ));
     $this->_officialColumn = civicrm_api3('CustomField', 'getvalue', array(
-      'name' => 'official_for_neighbourhood',
+      'name' => 'Official_for_Neighbourhood',
       'return' => 'column_name',
     ));
     if ($officials['count'] > 0) {
