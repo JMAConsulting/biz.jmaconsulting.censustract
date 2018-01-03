@@ -243,7 +243,7 @@ class CRM_Censustract_Form_Report_NeighbourhoodOfficial extends CRM_Report_Form 
   public function where() {
     $this->storeWhereHavingClauseArray();
     
-    if (($official = CRM_Utils_Array::value("official_id_value", $this->_params)) || $official = $_GET['official_id_value']) {
+    if (($official = CRM_Utils_Array::value("official_id_value", $this->_params)) || (!empty($_GET['official_id_value']) && ($official = $_GET['official_id_value']))) {
       if (is_array($official)) {
         $official = implode(',', $official);
       }
