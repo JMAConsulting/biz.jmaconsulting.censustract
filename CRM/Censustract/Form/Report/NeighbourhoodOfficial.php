@@ -43,6 +43,7 @@ class CRM_Censustract_Form_Report_NeighbourhoodOfficial extends CRM_Report_Form 
     'Individual',
     'Household',
     'Organization',
+    'Address',
   );
 
   public $_drilldownReport = array('contact/detail' => 'Link to Detail Report');
@@ -249,14 +250,14 @@ class CRM_Censustract_Form_Report_NeighbourhoodOfficial extends CRM_Report_Form 
       }
       $dao = CRM_Core_DAO::executeQuery("SELECT {$this->_officialColumn} tract FROM {$this->_officialTable} officialtable WHERE entity_id IN (" . $official . ")");
       $tracts = array();
+      list($table, $column) = CRM_Censustract_BAO_Censustract::getTractData();
       while ($dao->fetch()) {
-        $tracts[] = '"%' . $dao->tract . '%" ';
+        $tracts[] = ' (' . $column . ' LIKE "%' . $dao->tract . '%") ';
       }
       
       $tracts = implode(' OR ', $tracts);
       if (!empty($tracts)) {
-        list($table, $column) = CRM_Censustract_BAO_Censustract::getTractData();
-        $sql = CRM_Core_DAO::singleValueQuery("SELECT GROUP_CONCAT(a.id) FROM civicrm_address a INNER JOIN {$table} t ON t.entity_id = a.id WHERE {$column} LIKE {$tracts}");
+        $sql = CRM_Core_DAO::singleValueQuery("SELECT GROUP_CONCAT(a.id) FROM civicrm_address a INNER JOIN {$table} t ON t.entity_id = a.id WHERE {$tracts}");
         $this->_whereClauses[] = " ({$this->_aliases['civicrm_address']}.id IN ({$sql}))";
       }
     }
