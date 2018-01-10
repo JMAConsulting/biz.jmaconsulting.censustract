@@ -39,8 +39,8 @@ class CRM_Censustract_BAO_Censustract extends CRM_Core_DAO {
       $output = json_decode($response, TRUE);
       if (!empty($output['result']) && !empty($output['result']['addressMatches'])) {
         // Return the first match.
-        if (!empty($output['result']['addressMatches'][0]['geographies']['Census Tracts'][0]['TRACT'])) {
-          return $output['result']['addressMatches'][0]['geographies']['Census Tracts'][0]['TRACT'];
+        if (!empty($output['result']['addressMatches'][0]['geographies']['Census Tracts'][0]['BASENAME'])) {
+          return $output['result']['addressMatches'][0]['geographies']['Census Tracts'][0]['BASENAME'];
         }
         else {
           return NULL;
