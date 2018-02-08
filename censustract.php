@@ -166,13 +166,19 @@ function censustract_civicrm_fieldOptions($entity, $field, &$options, $params) {
  */
 function censustract_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   if ($objectName == "Address") {
+    if (!empty($objectRef->state_province_id) && $objectRef->state_province_id != 1004) {
+      return;
+    }
     $addressFields = array(
+      "street_number" => "street",
+      "street_name" => "street",
       "street_address" => "street",
       "city" => "city",
       "state_province_id" => "state",
       "postal_code" => "zip",
     );
     $address = "";
+    $add = '';
     foreach ($addressFields as $key => $field) {
       if (empty($objectRef->$key)) {
         continue;
@@ -181,9 +187,19 @@ function censustract_civicrm_post($op, $objectName, $objectId, &$objectRef) {
         $addressField = CRM_Core_PseudoConstant::stateProvince($objectRef->$key, FALSE);
       }
       else {
-        $addressField = $objectRef->$key;
+        if (in_array($key, array("street_number", "street_name", "street_address"))) {
+          $add .= ' ' . $objectRef->$key;
+        }
+        else {
+          $addressField = $objectRef->$key;
+        }
       }
-      $address .= $field . "=" . CRM_Censustract_BAO_Censustract::parseText($addressField) . "&";
+      if ($field != "street") {
+        $address .= $field . "=" . CRM_Censustract_BAO_Censustract::parseText($addressField) . "&";
+      }
+    }
+    if (!empty($add)) {
+      $address .= "street=" . CRM_Censustract_BAO_Censustract::parseText($add) . "&";
     }
     if (!empty($address)) {
       $address .= "benchmark=Public_AR_Current&vintage=Current_Current&format=json";
