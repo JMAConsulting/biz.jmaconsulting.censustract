@@ -165,7 +165,7 @@ function censustract_civicrm_fieldOptions($entity, $field, &$options, $params) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_post
  */
 function censustract_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-  if ($objectName == "Address") {
+  if ($objectName == "Address" && ($op == 'create' || $op == 'edit')) {
     if (!empty($objectRef->state_province_id) && $objectRef->state_province_id != 1004) {
       return;
     }
