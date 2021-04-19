@@ -83,6 +83,15 @@ function censustract_civicrm_enable() {
 }
 
 /**
+ * Implementation of hook_civicrm_postInstall
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_postInstall
+ */
+function censustract_civicrm_postInstall() {
+  _censustract_civix_civicrm_postInstall();
+}
+
+/**
  * Implementation of hook_civicrm_disable
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
@@ -146,10 +155,7 @@ function censustract_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_fieldOptions
  */
 function censustract_civicrm_fieldOptions($entity, $field, &$options, $params) {
-  $neighbourhood = civicrm_api3('CustomField', 'getvalue', array(
-    'name' => 'Official_for_Neighbourhood',
-    'return' => 'id',
-  ));
+  $neighbourhood = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_custom_field WHERE 'name' => 'Official_for_Neighbourhood'");
   if ($entity == "Contact" && $field == "custom_" . $neighbourhood) {
     list($table, $column) = CRM_Censustract_BAO_Censustract::getTractData();
     $dao = CRM_Core_DAO::executeQuery("SELECT {$column} as tract FROM {$table} GROUP BY {$column}");
