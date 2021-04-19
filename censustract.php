@@ -155,7 +155,7 @@ function censustract_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_fieldOptions
  */
 function censustract_civicrm_fieldOptions($entity, $field, &$options, $params) {
-  $neighbourhood = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_custom_field WHERE 'name' => 'Official_for_Neighbourhood'");
+  $neighbourhood = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_custom_field WHERE name = 'Official_for_Neighbourhood'");
   if ($entity == "Contact" && $field == "custom_" . $neighbourhood) {
     list($table, $column) = CRM_Censustract_BAO_Censustract::getTractData();
     $dao = CRM_Core_DAO::executeQuery("SELECT {$column} as tract FROM {$table} GROUP BY {$column}");
@@ -241,7 +241,7 @@ function censustract_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   }
 }
 
-function censustract_civicrm_alterMailParams(&$params, $context) { 
+function censustract_civicrm_alterMailParams(&$params, $context) {
   if (CRM_Utils_Array::value('groupName', $params) == 'Report Email Sender') {
     $email = CRM_Utils_Request::retrieve('email_to_send', 'String', CRM_Core_DAO::$_nullObject);
     if ($email) {
